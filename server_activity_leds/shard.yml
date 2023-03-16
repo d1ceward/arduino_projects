@@ -1,0 +1,16 @@
+name: server_activity_leds
+version: 0.1.0
+authors:
+  - d1ceward <contact@d1ceward.com>
+description: Server HDD/Network activities to LEDs
+license: GPL-3.0
+crystal: 1.7.3
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.4.0
+
+targets:
+  server-activity-leds:
+    main: src/server_activity_leds.cr
