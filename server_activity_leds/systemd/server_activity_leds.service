@@ -1,0 +1,8 @@
+[Unit]
+Description=server_activity_leds - Server HDD/Network activities to LEDs
+Requires=systemd-networkd.service
+
+[Service]
+Environment="SAL_DISK_LABEL=sda"
+Environment="SAL_NET_INTERFACE=enp1s0"
+ExecStart=/opt/server_activity_leds
