@@ -2,19 +2,24 @@ const int hddLedPin = 2;
 const int networkLedPin = 3;
 
 // INPUT VALUES
+const int ALL_LED_OFF = 0;
+const int ALL_LED_ON = 1;
+
 const int HDD_LED_ON = 2; // HDD led on
 const int HDD_LED_OFF = 3; // HDD led off
+
 const int NETWORK_LED_ON = 4; // Network led on
 const int NETWORK_LED_OFF = 5; // Network led off
 
-const byte maxCharacters = 32;
+const byte maxCharacters = 8;
 char inputString[maxCharacters];
 boolean newData = false;
 
 void setup() {
-  Serial.begin(9600);
-  while (!Serial);
+  Serial.begin(4800);
+  while (!Serial); // Wait for serial
 
+  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(hddLedPin, OUTPUT);
   pinMode(networkLedPin, OUTPUT);
 }
@@ -53,6 +58,14 @@ void processInput() {
   int command = atoi(inputString);
 
   switch (command) {
+    case ALL_LED_OFF:
+      digitalWrite(hddLedPin, LOW);
+      digitalWrite(networkLedPin, LOW);
+      break;
+    case ALL_LED_ON:
+      digitalWrite(hddLedPin, HIGH);
+      digitalWrite(networkLedPin, HIGH);
+      break;
     case HDD_LED_ON:
       digitalWrite(hddLedPin, HIGH);
       break;

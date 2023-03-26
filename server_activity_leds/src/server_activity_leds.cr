@@ -1,32 +1,31 @@
 require "./version"
+require "./server_activity_leds/disk_stats"
+require "./server_activity_leds/leds"
 require "./server_activity_leds/libc"
+require "./server_activity_leds/net_stats"
 require "./server_activity_leds/serial"
 
 ServerActivityLeds::Serial.set_serial_file_termios
 
-disk_report = nil
-net_report = nil
-previous_disk_report = File.read("/proc/diskstats")
-previous_net_report = File.read("/proc/net/dev").split('\n').find { |i| i.includes?("eno1") }
+# The name of the disk to monitor.
+disk_label = ENV["SAL_DISK_LABEL"]? || "sda"
 
+# The name of the network interface to monitor.
+interface = ENV["SAL_NET_INTERFACE"]? || "eth0"
+
+# Initialize the previous disk and network reports.
+prev_disk_report = ServerActivityLeds::DiskStats.report(disk_label)
+prev_net_report = ServerActivityLeds::NetStats.report(interface)
+
+# Loop indefinitely, reading disk and network reports and updating the LED status.
 loop do
-  disk_report = File.read("/proc/diskstats")
-  net_report = File.read("/proc/net/dev").split('\n').find { |i| i.includes?("eno1") }
+  disk_report = ServerActivityLeds::DiskStats.report(disk_label)
+  net_report = ServerActivityLeds::NetStats.report(interface)
 
-  diff_disk = disk_report != previous_disk_report
-  diff_net = net_report != previous_net_report
+  ServerActivityLeds::Leds.update_led_status(disk_report, net_report, prev_disk_report, prev_net_report)
 
-  if diff_disk && diff_net
-    File.write(ServerActivityLeds::Serial::SERIAL_FILE, "1\n")
-  elsif !diff_disk && !diff_net
-    File.write(ServerActivityLeds::Serial::SERIAL_FILE, "0\n")
-  else
-    File.write(ServerActivityLeds::Serial::SERIAL_FILE, diff_disk ? "2\n" : "3\n")
-    File.write(ServerActivityLeds::Serial::SERIAL_FILE, diff_net ? "4\n" : "5\n")
-  end
+  prev_disk_report = disk_report
+  prev_net_report = net_report
 
-  previous_disk_report = disk_report
-  previous_net_report = net_report
-
-  sleep(0.05)
+  sleep(0.1)
 end
